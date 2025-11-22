@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{
+      --brand-dark: #143d59;
+      --brand-mid:  #4b5f6d;
+      --bg: whitesmoke;
+    }
+
+    html, body{
+      height:100%;
+      margin:0;
+      background:var(--bg);
+      font-family: Arial, "Helvetica Neue", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-weight: 400; /* ensure no element defaults to bold */
+    }
+
+    .page {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 2.5rem 4rem;
+      box-sizing: border-box;
+      min-height: 100vh;
+    }
+
+    @media (min-width: 1024px) {
+      .page {
+        padding: 5rem 25rem;
+      }
+    }
+
+    h1 {
+      margin: 0 0 0.5rem 0;
+      color: var(--brand-dark);
+      font-size: 1.5rem;
+      text-align: center;
+      font-family: Georgia, serif;
+      font-weight: 400; /* no bold */
+    }
+
+    .subtitle {
+      margin: 0 0 0.75rem 0;
+      color: #334e5e;
+      text-align: center;
+      font-size: 0.95rem;
+      opacity: 0.9;
+      font-weight: 400; /* no bold */
+    }
+
+    .faq-item {
+      width: 100%;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(12,20,25,0.06);
+      background: linear-gradient(180deg, #ffffff, #fafafa);
+      border: 1px solid rgba(15,20,25,0.05);
+    }
+
+    .item-question {
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: var(--brand-dark);
+      color: #fff;
+      padding: 1.25rem 1.5rem;
+      cursor: pointer;
+      user-select: none;
+      font-weight: 400; /* no bold */
+    }
+
+    .question-text {
+      font-size: 1rem;
+      line-height: 1.2;
+      flex: 1 1 auto;
+      font-weight: 400; /* no bold */
+    }
+
+    .arrows-container {
+      flex: 0 0 auto;
+      font-size: 0.95rem;
+      opacity: 0.95;
+      font-weight: 400; /* no bold */
+    }
+
+    .item-answer {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 360ms cubic-bezier(.2,.9,.3,1), padding 260ms ease;
+      background: var(--brand-mid);
+      color: #fff;
+      padding: 0 1.5rem;
+      font-weight: 400; /* no bold */
+    }
+
+    .answer-inner {
+      padding: 1.25rem 0;
+      line-height: 1.6;
+      font-size: 0.97rem;
+      font-weight: 400; /* no bold */
+    }
+
+    .show-answer .item-answer {
+      padding: 1.25rem 1.5rem;
+      max-height: 800px;
+    }
+
+    .expand { display:inline; }
+    .close  { display:none; }
+    .show-answer .expand { display:none; }
+    .show-answer .close  { display:inline; }
+
+    @media (max-width: 1023px) {
+      .page { padding: 2rem 2.5rem; }
+      .item-question { padding: 1.1rem 1.25rem; }
+      .item-answer { padding-left: 1.25rem; padding-right: 1.25rem; }
+    }
+
+    @media (max-width: 599px) {
+      .page { padding: 1rem 1rem; }
+      h1 { font-size: 1.25rem; }
+      .subtitle { font-size: 0.9rem; }
+      .item-question { padding: 0.95rem 1rem; }
+      .question-text { font-size: 0.98rem; }
+      .answer-inner { padding: 0.9rem 0; font-size: 0.95rem; }
+      .show-answer .item-answer { max-height: 700px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Frequently Asked Questions</h1>
+    <div id="FAQs-container"></div>
+  </div>
+
+  <script>
+    const faqData = [
+      { question: "Which PPC platforms have you worked on?", answer: "Primarily, I have managed lead generation campaigns on Google Search and Facebook. Additionally, I have experience with Google Display and YouTube for brand awareness, as well as niche campaigns on Reddit and X (Twitter). For Japanese clients, I’ve run b2b campaigns on Yahoo! Japan and SmartNews." },
+      { question: "What kinds of companies have you worked with in the past?", answer: "I have worked with companies across B2B technology, marketing and advertising, healthcare, lifestyle, and other industries, including both international and local businesses." },
+      { question: "What range of PPC ad budgets have you managed?", answer: "I have managed advertising budgets ranging from $1,000 to $25,000 USD." },
+      { 
+        question: "What are your rates for freelance PPC campaign management?", 
+        answer: "My freelance PPC management fees can be structured as a percentage of the ad budget (15–30%), hourly rate, or project-based fee. Please contact me for a custom quote." 
+      }
+    ];
+
+    const container = document.getElementById('FAQs-container');
+
+    faqData.forEach(item => {
+      const article = document.createElement('article');
+      article.className = 'faq-item';
+      article.innerHTML = `
+        <div class="item-question" tabindex="0" role="button" aria-expanded="false">
+          <span class="question-text">${escapeHtml(item.question)}</span>
+          <span class="arrows-container">
+            <span class="expand">▼</span>
+            <span class="close">▲</span>
+          </span>
+        </div>
+        <div class="item-answer" aria-hidden="true">
+          <div class="answer-inner">${escapeHtml(item.answer)}</div>
+        </div>
+      `;
+      container.appendChild(article);
+    });
+
+    document.querySelectorAll('.item-question').forEach(q => {
+      const parent = q.parentElement;
+      const answer = parent.querySelector('.item-answer');
+
+      q.addEventListener('click', () => toggle(parent, q, answer));
+      q.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle(parent, q, answer);
+        } else if (e.key === 'Escape') {
+          close(parent, q, answer);
+        }
+      });
+    });
+
+    function toggle(parent, q, answer) {
+      const open = parent.classList.contains('show-answer');
+      if (open) {
+        close(parent, q, answer);
+      } else {
+        parent.classList.add('show-answer');
+        q.setAttribute('aria-expanded', 'true');
+        answer.setAttribute('aria-hidden', 'false');
+      }
+    }
+
+    function close(parent, q, answer) {
+      parent.classList.remove('show-answer');
+      q.setAttribute('aria-expanded', 'false');
+      answer.setAttribute('aria-hidden', 'true');
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#39;');
+    }
+  </script>
+</body>
+</html>
